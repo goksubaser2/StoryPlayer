@@ -41,15 +41,13 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
                 .load(ppUrlList[position])
                 .into(holder.imageView);
         holder.frameLayout.setOnClickListener(view -> {
-//            @Override
-//            public void onClick(View view) {
-//                Intent intent = new Intent(view.getContext(), StoryPlayerActivity.class);
+                Intent intent = new Intent(view.getContext(), StoryPlayerActivity.class);
 //                intent.putExtra("usernameList",usernameList);
 //                intent.putExtra("ppUrlList",ppUrlList);
 //                intent.putExtra("position",holder.getAdapterPosition());
 //
-//                view.getContext().startActivity(intent);
-//            }
+                view.getContext().startActivity(intent);
+
         });
     }
 
