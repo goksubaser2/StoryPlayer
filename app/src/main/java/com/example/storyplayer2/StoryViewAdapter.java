@@ -45,7 +45,7 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
 //                intent.putExtra("usernameList",usernameList);
 //                intent.putExtra("ppUrlList",ppUrlList);
 //                intent.putExtra("position",holder.getAdapterPosition());
-//
+
                 view.getContext().startActivity(intent);
 
         });

@@ -1,15 +1,25 @@
 package com.example.storyplayer2;
 
+import android.content.Context;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.WindowManager;
-import androidx.appcompat.app.AppCompatActivity;
+import android.widget.ImageView;
 
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager.widget.PagerAdapter;
+
+import com.example.storyplayer2.databinding.StoryBinding;
 import com.hisham.jazzyviewpagerlib.JazzyViewPager;
 import com.hisham.jazzyviewpagerlib.JazzyViewPager.TransitionEffect;
 
+import jp.shts.android.storiesprogressview.StoriesProgressView;
+
 //TODO
 public class StoryPlayerActivity extends AppCompatActivity {
-//    private JazzyViewPager vpage;
+    private JazzyViewPager vpage;
 //    private int position;
 //    private String[] usernameList;
 //    private String[] ppUrlList;
@@ -125,10 +135,10 @@ public class StoryPlayerActivity extends AppCompatActivity {
 //        // on below line we are calling a set on touch
 //        // listener method to move to next story.
 //        skip.setOnTouchListener(onTouchListener);
-//
-//        vpage = (JazzyViewPager) findViewById(R.id.jazzy_pager);
-//        vpage.setTransitionEffect(TransitionEffect.CubeOut);
-//        vpage.setAdapter(new MainAdapter());
+
+        vpage = (JazzyViewPager) findViewById(R.id.jazzy_pager);
+        vpage.setTransitionEffect(TransitionEffect.CubeOut);
+        vpage.setAdapter(new MainAdapter());
     }
 
 //    @Override
@@ -193,35 +203,60 @@ public class StoryPlayerActivity extends AppCompatActivity {
 //                .into(profileImage);
 //    }
 
-//    private class MainAdapter extends PagerAdapter {
-//        @Override
-//        public Object instantiateItem(ViewGroup container, final int position) {
-//            TextView text = new TextView(StoryPlayerActivity.this);
-//            text.setGravity(Gravity.CENTER);
-//            text.setTextSize(30);
-//            text.setTextColor(Color.WHITE);
-//            text.setText("Page " + position);
-//            text.setPadding(30, 30, 30, 30);
-//            int bg = Color.rgb((int) Math.floor(Math.random()*128)+64,
-//                    (int) Math.floor(Math.random()*128)+64,
-//                    (int) Math.floor(Math.random()*128)+64);
-//            text.setBackgroundColor(bg);
-//            container.addView(text, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-//            vpage.setObjectForPosition(text, position);
-//            return text;
-//        }
-//        @Override
-//        public void destroyItem(ViewGroup container, int position, Object obj) {
-//            container.removeView((View) obj);
-//        }
-//        @Override
-//        public int getCount() {
-//            return 10;
-//        }
-//        @Override
-//        public boolean isViewFromObject(View arg0, Object arg1) {
-//            return arg0 == arg1;
-//        }
-//    }
+    private class MainAdapter extends PagerAdapter implements StoriesProgressView.StoriesListener {
+        private StoriesProgressView storiesProgressView;
+        private ImageView image;
+
+        private final String[] ImageURls = {"https://source.unsplash.com/user/c_v_r/135x240","https://source.unsplash.com/user/c_v_r/150x150"}; //TODO
+        private int counter = 0;
+
+
+        @Override
+        public Object instantiateItem(ViewGroup container, final int position) {
+            LayoutInflater inflater = (LayoutInflater) container.getContext()
+                    .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            StoryBinding binding = StoryBinding.inflate(inflater);
+            View view = binding.getRoot();
+
+            storiesProgressView = binding.stories;
+            storiesProgressView.setStoriesCount(ImageURls.length);
+            storiesProgressView.setStoryDuration(3000L);
+            storiesProgressView.setStoriesListener(this);
+            storiesProgressView.startStories(counter);
+            image = (ImageView) findViewById(R.id.image);
+
+            container.addView(view, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            vpage.setObjectForPosition(view, position);
+
+            return view;
+        }
+        @Override
+        public void destroyItem(ViewGroup container, int position, Object obj) {
+            container.removeView((View) obj);
+        }
+        @Override
+        public int getCount() {
+            return 5;
+        }
+        @Override
+        public boolean isViewFromObject(View arg0, Object arg1) {
+            return arg0 == arg1;
+        }
+
+        @Override
+        public void onNext() {
+
+        }
+
+        @Override
+        public void onPrev() {
+
+        }
+
+        @Override
+        public void onComplete() {
+
+        }
+    }
 
 }

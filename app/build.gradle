@@ -1,7 +1,6 @@
 plugins {
     id 'com.android.application'
 }
-
 android {
     namespace 'com.example.storyplayer2'
     compileSdk 34
@@ -26,6 +25,9 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
+    buildFeatures {
+        viewBinding = true
+    }
 }
 
 dependencies {
@@ -43,5 +45,11 @@ dependencies {
 
     //JazzyViewPager
     implementation 'com.github.hishamMuneer:JazzyViewPager:1.0.0'
+
+    //StoryPlayer
+    implementation 'com.github.shts:StoriesProgressView:3.0.0'
+
+    //CircularImageView
+    implementation 'de.hdodenhof:circleimageview:3.1.0'
 
 }
