@@ -42,9 +42,9 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
                 .into(holder.imageView);
         holder.frameLayout.setOnClickListener(view -> {
                 Intent intent = new Intent(view.getContext(), StoryPlayerActivity.class);
-//                intent.putExtra("usernameList",usernameList);
-//                intent.putExtra("ppUrlList",ppUrlList);
-//                intent.putExtra("position",holder.getAdapterPosition());
+                intent.putExtra("usernameList",usernameList);
+                intent.putExtra("ppUrlList",ppUrlList);
+                intent.putExtra("position",holder.getAdapterPosition());
 
                 view.getContext().startActivity(intent);
 

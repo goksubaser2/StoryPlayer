@@ -1,20 +1,33 @@
 package com.example.storyplayer2;
 
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.viewpager.widget.PagerAdapter;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.example.storyplayer2.databinding.StoryBinding;
 import com.hisham.jazzyviewpagerlib.JazzyViewPager;
 import com.hisham.jazzyviewpagerlib.JazzyViewPager.TransitionEffect;
 
+import java.util.Objects;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 import jp.shts.android.storiesprogressview.StoriesProgressView;
 
 //TODO
@@ -71,36 +84,20 @@ public class StoryPlayerActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_story_player);
 
-//        // inside in create method below line is use to make a full screen.
-//
-//        // on below line we are initializing our variables.
 //        storiesProgressView = (StoriesProgressView) findViewById(R.id.stories);
-//
-//        // on below line we are setting the total count for our stories.
 //        storiesProgressView.setStoriesCount(ImageURls.length);
-//
-//        // on below line we are setting story duration for each story.
 //        storiesProgressView.setStoryDuration(3000L);
-//
-//        // on below line we are calling a method for set
-//        // on story listener and passing context to it.
 //        storiesProgressView.setStoriesListener(this);
-//
-//        // below line is use to start stories progress bar.
 //        storiesProgressView.startStories(counter);
-//
-//        // initializing our image view.
 //        image = (ImageView) findViewById(R.id.image);
-//
+
 //        profileImage = findViewById(R.id.profile_image);
 //        usernameTV = findViewById(R.id.usernameTV);
-//
-//        Intent intent = getIntent();
+
 //        this.position = intent.getIntExtra("position",1);
 //        this.usernameList = Objects.requireNonNull(intent.getStringArrayExtra("usernameList"));
 //        this.ppUrlList = Objects.requireNonNull(intent.getStringArrayExtra("ppUrlList"));
-//
-//        // on below line we are setting image to our image view.
+
 //        glideImage(ImageURls[counter]);
 //
 //        // below is the view for going to the previous story.
@@ -138,7 +135,12 @@ public class StoryPlayerActivity extends AppCompatActivity {
 
         vpage = (JazzyViewPager) findViewById(R.id.jazzy_pager);
         vpage.setTransitionEffect(TransitionEffect.CubeOut);
-        vpage.setAdapter(new MainAdapter());
+        Intent intent = getIntent();
+        vpage.setAdapter(new MainAdapter(
+                Objects.requireNonNull(intent.getStringArrayExtra("usernameList")),
+                Objects.requireNonNull(intent.getStringArrayExtra("ppUrlList")))
+        );
+        vpage.setCurrentItem(intent.getIntExtra("position",0));
     }
 
 //    @Override
@@ -204,26 +206,51 @@ public class StoryPlayerActivity extends AppCompatActivity {
 //    }
 
     private class MainAdapter extends PagerAdapter implements StoriesProgressView.StoriesListener {
+        StoryBinding binding;
         private StoriesProgressView storiesProgressView;
         private ImageView image;
-
-        private final String[] ImageURls = {"https://source.unsplash.com/user/c_v_r/135x240","https://source.unsplash.com/user/c_v_r/150x150"}; //TODO
+        private final String[][] ImageURls = {{"https://source.unsplash.com/user/c_v_r/100x100"},
+                {"https://source.unsplash.com/user/c_v_r/125x125", "https://source.unsplash.com/user/c_v_r/150x150"},
+                {"https://source.unsplash.com/user/c_v_r/175x175", "https://source.unsplash.com/user/c_v_r/200x200", "https://source.unsplash.com/user/c_v_r/225x225"},
+                {"https://source.unsplash.com/user/c_v_r/250x250", "https://source.unsplash.com/user/c_v_r/275x275","https://source.unsplash.com/user/c_v_r/300x300", "https://source.unsplash.com/user/c_v_r/325x325"},
+                {"https://source.unsplash.com/user/c_v_r/350x350", "https://source.unsplash.com/user/c_v_r/375x375","https://source.unsplash.com/user/c_v_r/400x400", "https://source.unsplash.com/user/c_v_r/425x425","https://source.unsplash.com/user/c_v_r/450x450"}
+        }; //TODO
         private int counter = 0;
+        private CircleImageView profileImage;
+        private TextView usernameTV;
+        private String[] usernameList;
+        private String[] ppUrlList;
 
-
+        public MainAdapter(String[] usernameList,String[] ppUrlList){
+            this.usernameList=usernameList;
+            this.ppUrlList = ppUrlList;
+        }
         @Override
         public Object instantiateItem(ViewGroup container, final int position) {
+
             LayoutInflater inflater = (LayoutInflater) container.getContext()
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            StoryBinding binding = StoryBinding.inflate(inflater);
+            binding = StoryBinding.inflate(inflater);
             View view = binding.getRoot();
 
+            //TODO counter should start at unwatched story
+
             storiesProgressView = binding.stories;
-            storiesProgressView.setStoriesCount(ImageURls.length);
-            storiesProgressView.setStoryDuration(3000L);
+            storiesProgressView.setStoriesCount(ImageURls[position].length);
+            storiesProgressView.setStoryDuration(5000);
             storiesProgressView.setStoriesListener(this);
             storiesProgressView.startStories(counter);
-            image = (ImageView) findViewById(R.id.image);
+            image = binding.image;
+
+            profileImage = binding.profileImage;
+            usernameTV = binding.usernameTV;
+
+            usernameTV.setText(usernameList[position]);
+            Glide.with(binding.getRoot())
+                    .load(ppUrlList[position])
+                    .into(profileImage);
+
+            glideImage(ImageURls[position][counter]);
 
             container.addView(view, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             vpage.setObjectForPosition(view, position);
@@ -236,7 +263,7 @@ public class StoryPlayerActivity extends AppCompatActivity {
         }
         @Override
         public int getCount() {
-            return 5;
+            return usernameList.length;
         }
         @Override
         public boolean isViewFromObject(View arg0, Object arg1) {
@@ -244,18 +271,37 @@ public class StoryPlayerActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onNext() {
-
+        public void onNext() {//TODO
+            System.out.println("next");
         }
 
         @Override
-        public void onPrev() {
-
+        public void onPrev() {//TODO
+            System.out.println("prev");
         }
 
         @Override
-        public void onComplete() {
+        public void onComplete() {//TODO
+            System.out.println("complete");
 
+        }
+        private void glideImage(String URL)
+        {
+            Glide.with(binding.getRoot())
+                    .load(URL)
+                    .listener(new RequestListener<Drawable>() {
+                        @Override
+                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                            Toast.makeText(StoryPlayerActivity.this, "Failed to load image.", Toast.LENGTH_SHORT).show();
+                            return false;
+                        }
+
+                        @Override
+                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                            return false;
+                        }
+                    })
+                    .into(image);
         }
     }
 
