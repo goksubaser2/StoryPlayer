@@ -18,12 +18,14 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
     String[] usernameList;
     String[] ppUrlList;
     RecyclerView storyViewRV;
+    int[] counter;
 
 
-    public StoryViewAdapter(String[] usernameList, String[] ppUrlList, RecyclerView storyViewRV) {
+    public StoryViewAdapter(String[] usernameList, String[] ppUrlList, RecyclerView storyViewRV, int[] counter) {
         this.usernameList = usernameList;
         this.ppUrlList = ppUrlList;
         this.storyViewRV = storyViewRV;
+        this.counter=counter;
     }
 
     @NonNull
@@ -41,12 +43,12 @@ public class StoryViewAdapter extends RecyclerView.Adapter<StoryViewAdapter.Stor
                 .load(ppUrlList[position])
                 .into(holder.imageView);
         holder.frameLayout.setOnClickListener(view -> {
-                Intent intent = new Intent(view.getContext(), StoryPlayerActivity.class);
-                intent.putExtra("usernameList",usernameList);
-                intent.putExtra("ppUrlList",ppUrlList);
-                intent.putExtra("position",holder.getAdapterPosition());
-
-                view.getContext().startActivity(intent);
+            Intent intent = new Intent(view.getContext(), StoryPlayerActivity.class);
+            intent.putExtra("usernameList",usernameList);
+            intent.putExtra("ppUrlList",ppUrlList);
+            intent.putExtra("position",holder.getAdapterPosition());
+            intent.putExtra("counter", counter);
+            view.getContext().startActivity(intent);
 
         });
     }
