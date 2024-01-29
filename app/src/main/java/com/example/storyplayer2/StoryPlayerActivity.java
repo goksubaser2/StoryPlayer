@@ -214,13 +214,13 @@ public class StoryPlayerActivity extends AppCompatActivity {
 
             View reverse = binding.reverse;
             reverse.setOnClickListener(v -> storiesProgressView.reverse());
-//            reverse.setOnTouchListener(onTouchListener);
+            reverse.setOnTouchListener(onTouchListener);
 
             View skip = binding.skip;
             skip.setOnClickListener(v -> {
                 storiesProgressView.skip();
             });
-//            skip.setOnTouchListener(onTouchListener);
+            skip.setOnTouchListener(onTouchListener);
 
             container.addView(view, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             vpage.setObjectForPosition(view, position);
@@ -243,16 +243,24 @@ public class StoryPlayerActivity extends AppCompatActivity {
         @Override
         public void onNext() {//TODO
             System.out.println("next");
-            counter[position]++;
             System.out.println(counter[0]+" "+counter[1]+" "+counter[2]+" "+counter[3]+" "+counter[4]);
             if(ImageURls[position].length>counter[position]) {
+                counter[position]++;
                 glideImage(ImageURls[position][counter[position]]);
             }
         }
         @Override
         public void onPrev() {//TODO
             System.out.println("prev");
-            if ((counter[position] - 1) < 0) return;
+            if ((counter[position] - 1) < 0) {
+                if(position>0) {
+                    position--;
+                    vpage.setCurrentItem(position);
+                    startStories();
+                }
+                System.out.println(position);
+                return;
+            }
             --counter[position];
             if(ImageURls[position].length>counter[position]) {
                 glideImage(ImageURls[position][counter[position]]);
@@ -261,10 +269,10 @@ public class StoryPlayerActivity extends AppCompatActivity {
         @Override
         public void onComplete() {//TODO
             System.out.println("complete");
-            counter[position]++;
+            counter[position] = ImageURls[position].length;
             position++;
             vpage.setCurrentItem(position);
-//            storiesProgressView.startStories(counter[position]);
+            startStories();
         }
         private void glideImage(String URL)
         {
@@ -292,25 +300,25 @@ public class StoryPlayerActivity extends AppCompatActivity {
             if(counter[position]<ImageURls[position].length) storiesProgressView.startStories(counter[position]);
             image = binding.image;
         }
-//        private final View.OnTouchListener onTouchListener = new View.OnTouchListener() {
-//            @Override
-//            public boolean onTouch(View view, MotionEvent motionEvent) {
-//                switch (motionEvent.getAction()) {
-//                    case MotionEvent.ACTION_DOWN:
-//
-//                        pressTime = System.currentTimeMillis();
-//                        storiesProgressView.pause();
-//                        return false;
-//
-//                    case MotionEvent.ACTION_UP:
-//
-//                        long now = System.currentTimeMillis();
-//                        storiesProgressView.resume();
-//                        return limit < now - pressTime;
-//                }
-//                return false;
-//            }
-//        };
+        private final View.OnTouchListener onTouchListener = new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                switch (motionEvent.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+
+                        pressTime = System.currentTimeMillis();
+                        storiesProgressView.pause();
+                        return false;
+
+                    case MotionEvent.ACTION_UP:
+
+                        long now = System.currentTimeMillis();
+                        storiesProgressView.resume();
+                        return limit < now - pressTime;
+                }
+                return false;
+            }
+        };
     }
 
 }
