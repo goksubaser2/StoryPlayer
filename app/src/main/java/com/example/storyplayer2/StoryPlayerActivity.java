@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -151,40 +152,10 @@ public class StoryPlayerActivity extends AppCompatActivity {
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {}
             public void onPageSelected(int position) {
                 vpageAdapter.position=position;
-                vpageAdapter.storiesProgressView.startStories(0);
+                vpageAdapter.startStories();
             }
         });
     }
-
-//    @Override
-//    public void onNext() {
-//        // this method is called when we move
-//        // to next progress view of story.
-//        glideImage(ImageURls[++counter]);
-//    }
-
-//    @Override
-//    public void onPrev() {
-//
-//        // this method id called when we move to previous story.
-//        // on below line we are decreasing our counter
-//        if ((counter - 1) < 0) return;
-//        glideImage(ImageURls[--counter]);
-//
-//        // on below line we are setting image to image view
-//    }
-
-//    @Override
-//    public void onComplete() {//TODO
-//        Intent i = new Intent(StoryPlayerActivity.this, StoryPlayerActivity.class);
-//
-//        i.putExtra("usernameList",usernameList);
-//        i.putExtra("ppUrlList",ppUrlList);
-//        i.putExtra("position",position+1);
-//        startActivity(i);
-//        finish();
-//
-//    }
 
 //    @Override
 //    protected void onDestroy() {
@@ -195,12 +166,12 @@ public class StoryPlayerActivity extends AppCompatActivity {
 //    }
 
     private class MainAdapter extends PagerAdapter implements StoriesProgressView.StoriesListener {
+        StoriesProgressView storiesProgressView;
         StoryBinding binding;
         View view;
-        private StoriesProgressView storiesProgressView;
         private ImageView image;
         private final String[][] ImageURls = {
-                {"https://source.unsplash.com/user/c_v_r/100x100"},
+                {"https://source.unsplash.com/user/c_v_r/100x100","https://source.unsplash.com/user/c_v_r/50x50"},
                 {"https://source.unsplash.com/user/c_v_r/125x125", "https://source.unsplash.com/user/c_v_r/100x150"},
                 {"https://source.unsplash.com/user/c_v_r/175x175", "https://source.unsplash.com/user/c_v_r/200x200", "https://source.unsplash.com/user/c_v_r/225x225"},
                 {"https://source.unsplash.com/user/c_v_r/250x250", "https://source.unsplash.com/user/c_v_r/275x275","https://source.unsplash.com/user/c_v_r/300x300", "https://source.unsplash.com/user/c_v_r/325x325"},
@@ -223,22 +194,15 @@ public class StoryPlayerActivity extends AppCompatActivity {
         }
         @Override
         public Object instantiateItem(ViewGroup container, final int position) {
-
             LayoutInflater inflater = (LayoutInflater) container.getContext()
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             binding = StoryBinding.inflate(inflater);
             view = binding.getRoot();
 
-            //TODO counter should start at unwatched story
-
-            storiesProgressView = binding.stories;
-            storiesProgressView.setStoriesCount(ImageURls[position].length);
-            storiesProgressView.setStoryDuration(5000);
-            storiesProgressView.setStoriesListener(this);
-            if(this.position==position){
-                storiesProgressView.startStories(counter[position]);
+            if(this.position==position) {
+                startStories();
             }
-            image = binding.image;
+
             profileImage = binding.profileImage;
             usernameTV = binding.usernameTV;
 
@@ -246,7 +210,6 @@ public class StoryPlayerActivity extends AppCompatActivity {
             Glide.with(view)
                     .load(ppUrlList[position])
                     .into(profileImage);
-
             glideImage(ImageURls[position][counter[position]]);
 
             View reverse = binding.reverse;
@@ -281,19 +244,27 @@ public class StoryPlayerActivity extends AppCompatActivity {
         public void onNext() {//TODO
             System.out.println("next");
             counter[position]++;
-            glideImage(ImageURls[position][counter[position]]);
+            System.out.println(counter[0]+" "+counter[1]+" "+counter[2]+" "+counter[3]+" "+counter[4]);
+            if(ImageURls[position].length>counter[position]) {
+                glideImage(ImageURls[position][counter[position]]);
+            }
         }
         @Override
         public void onPrev() {//TODO
             System.out.println("prev");
             if ((counter[position] - 1) < 0) return;
             --counter[position];
-            glideImage(ImageURls[position][counter[position]]);
+            if(ImageURls[position].length>counter[position]) {
+                glideImage(ImageURls[position][counter[position]]);
+            }
         }
         @Override
         public void onComplete() {//TODO
             System.out.println("complete");
-
+            counter[position]++;
+            position++;
+            vpage.setCurrentItem(position);
+//            storiesProgressView.startStories(counter[position]);
         }
         private void glideImage(String URL)
         {
@@ -312,6 +283,14 @@ public class StoryPlayerActivity extends AppCompatActivity {
                         }
                     })
                     .into(image);
+        }
+        private void startStories(){
+            storiesProgressView = binding.stories;
+            storiesProgressView.setStoriesCount(ImageURls[position].length);
+            storiesProgressView.setStoryDuration(8000);
+            storiesProgressView.setStoriesListener(this);
+            if(counter[position]<ImageURls[position].length) storiesProgressView.startStories(counter[position]);
+            image = binding.image;
         }
 //        private final View.OnTouchListener onTouchListener = new View.OnTouchListener() {
 //            @Override
