@@ -14,7 +14,6 @@ public class MainActivity extends AppCompatActivity {
             "https://source.unsplash.com/user/c_v_r/100x100",
             "https://source.unsplash.com/user/c_v_r/128x128",
             "https://source.unsplash.com/user/c_v_r/256x256"};
-    public int[] counter = {0,0,0,0,0};
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,6 +22,6 @@ public class MainActivity extends AppCompatActivity {
 
         storyViewRV = findViewById(R.id.storyViewRV);
         storyViewRV.setLayoutManager(new LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false));
-        storyViewRV.setAdapter(new StoryViewAdapter(usernameList,ppUrlList,storyViewRV,counter));
+        storyViewRV.setAdapter(new StoryViewAdapter(usernameList,ppUrlList,storyViewRV));
     }
 }

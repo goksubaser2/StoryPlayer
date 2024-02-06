@@ -88,7 +88,12 @@ public class StoryPlayerActivity extends AppCompatActivity {
             public void onPageSelected(int position) {}
         });
     }
-
+    @Override
+    public void finish() {
+        super.finish();
+        System.out.println("finish");
+        StoryViewAdapter.counter = vpageAdapter.counter;
+    }
     private class MainAdapter extends PagerAdapter implements StoriesProgressView.StoriesListener {
         private final StoryPlayerActivity activity;
         StoriesProgressView storiesProgressView;
@@ -119,7 +124,8 @@ public class StoryPlayerActivity extends AppCompatActivity {
         @NonNull
         @Override
         public Object instantiateItem(ViewGroup container, final int position) {
-            System.out.println("inflate started");
+            System.out.println("this.position: "+this.position +" // position: "+ position);
+
             LayoutInflater inflater = (LayoutInflater) container.getContext()
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             binding = StoryBinding.inflate(inflater);
@@ -154,7 +160,6 @@ public class StoryPlayerActivity extends AppCompatActivity {
 
         @Override
         public void onNext() {
-            System.out.println("next");
             if(ImageURls[position].length>counter[position]) {
                 counter[position]++;
                 glideImage(ImageURls[position][counter[position]]);
@@ -162,7 +167,6 @@ public class StoryPlayerActivity extends AppCompatActivity {
         }
         @Override
         public void onPrev() {
-            System.out.println("prev");
             if ((counter[position] - 1) < 0) {
                 if(position>0) {
                     position--;
@@ -178,7 +182,6 @@ public class StoryPlayerActivity extends AppCompatActivity {
         }
         @Override
         public void onComplete() {
-            System.out.println("complete");
             counter[position] = ImageURls[position].length-1;
             if(position<ImageURls.length-1){
                 position++;
