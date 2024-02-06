@@ -35,6 +35,7 @@ import jp.shts.android.storiesprogressview.StoriesProgressView;
 
 public class StoryPlayerActivity extends AppCompatActivity {
     private JazzyViewPager vpage;
+    MainAdapter vpageAdapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,7 +46,7 @@ public class StoryPlayerActivity extends AppCompatActivity {
         vpage.setTransitionEffect(TransitionEffect.CubeOut);
         Intent intent = getIntent();
         int[] counter = intent.getIntArrayExtra("counter");
-        MainAdapter vpageAdapter = new MainAdapter(this,
+        vpageAdapter = new MainAdapter(this,
                 intent.getIntExtra("position",0),
                 Objects.requireNonNull(intent.getStringArrayExtra("usernameList")),
                 Objects.requireNonNull(intent.getStringArrayExtra("ppUrlList")),
@@ -54,15 +55,41 @@ public class StoryPlayerActivity extends AppCompatActivity {
         vpage.setAdapter(vpageAdapter);
         vpage.setCurrentItem(intent.getIntExtra("position",0));
         vpage.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            int oldPosition = -1;
+            int tempPosition = -1;
+            boolean scrolling = false;
+
             public void onPageScrollStateChanged(int state) {
+                System.out.println("State: " + state + " // TempPos: " + tempPosition);
                 if(state == 0) {
-                    vpageAdapter.startStories();
+                    if(tempPosition>0) {
+                        vpageAdapter.position=tempPosition;
+                        tempPosition = -1;
+                        vpageAdapter.startStories();
+
+                    }else{
+                        vpageAdapter.storiesProgressView.resume();
+                    }
                 }
             }
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {}
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                System.out.println(position+"//"+positionOffset+"//"+scrolling+"//"+oldPosition+"//"+tempPosition);
+                if(positionOffset>0){
+                    scrolling = true;
+                }else{
+                    if (scrolling){
+                        if (oldPosition != position){
+                            tempPosition = position;
+                        }else {
+                            tempPosition = -1;
+                        }
+                    }
+                    oldPosition = position;
+                    scrolling = false;
+                }
+            }
             public void onPageSelected(int position) {
-                vpageAdapter.position=position;
-
+                System.out.println("Posi:" + position);
             }
         });
     }
@@ -143,7 +170,7 @@ public class StoryPlayerActivity extends AppCompatActivity {
             if ((counter[position] - 1) < 0) {
                 if(position>0) {
                     position--;
-                    vpage.setAdapter(this);
+                    vpage.setAdapter(vpageAdapter);
                     vpage.setCurrentItem(position);
                 }
                 return;
@@ -158,7 +185,7 @@ public class StoryPlayerActivity extends AppCompatActivity {
             counter[position] = ImageURls[position].length-1;
             if(position<ImageURls.length-1){
                 position++;
-                vpage.setAdapter(this);
+                vpage.setAdapter(vpageAdapter);
                 vpage.setCurrentItem(position);
             }else{
                 activity.finish();
@@ -214,7 +241,6 @@ public class StoryPlayerActivity extends AppCompatActivity {
                         return false;
 
                     case MotionEvent.ACTION_UP:
-
                         long now = System.currentTimeMillis();
                         storiesProgressView.resume();
                         return limit < now - pressTime;
