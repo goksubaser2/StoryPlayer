@@ -62,7 +62,7 @@ public class StoryPlayerActivity extends AppCompatActivity {
             public void onPageScrollStateChanged(int state) {
                 System.out.println("State: " + state + " // TempPos: " + tempPosition);
                 if(state == 0) {
-                    if(tempPosition>0) {
+                    if(tempPosition>=0) {
                         vpageAdapter.position=tempPosition;
                         tempPosition = -1;
                         vpageAdapter.startStories();
@@ -88,9 +88,7 @@ public class StoryPlayerActivity extends AppCompatActivity {
                     scrolling = false;
                 }
             }
-            public void onPageSelected(int position) {
-                System.out.println("Posi:" + position);
-            }
+            public void onPageSelected(int position) {}
         });
     }
 
