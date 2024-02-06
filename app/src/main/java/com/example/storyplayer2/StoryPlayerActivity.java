@@ -60,20 +60,17 @@ public class StoryPlayerActivity extends AppCompatActivity {
             boolean scrolling = false;
 
             public void onPageScrollStateChanged(int state) {
-                System.out.println("State: " + state + " // TempPos: " + tempPosition);
                 if(state == 0) {
                     if(tempPosition>=0) {
                         vpageAdapter.position=tempPosition;
                         tempPosition = -1;
                         vpageAdapter.startStories();
-
                     }else{
                         vpageAdapter.storiesProgressView.resume();
                     }
                 }
             }
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                System.out.println(position+"//"+positionOffset+"//"+scrolling+"//"+oldPosition+"//"+tempPosition);
                 if(positionOffset>0){
                     scrolling = true;
                 }else{
@@ -122,6 +119,7 @@ public class StoryPlayerActivity extends AppCompatActivity {
         @NonNull
         @Override
         public Object instantiateItem(ViewGroup container, final int position) {
+            System.out.println("inflate started");
             LayoutInflater inflater = (LayoutInflater) container.getContext()
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             binding = StoryBinding.inflate(inflater);
@@ -137,10 +135,8 @@ public class StoryPlayerActivity extends AppCompatActivity {
             if(this.position==position) {
                 startStories();
             }
-
+            vpage.setObjectForPosition(view, position);
             container.addView(view, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-
-
             return view;
         }
         @Override
@@ -158,6 +154,7 @@ public class StoryPlayerActivity extends AppCompatActivity {
 
         @Override
         public void onNext() {
+            System.out.println("next");
             if(ImageURls[position].length>counter[position]) {
                 counter[position]++;
                 glideImage(ImageURls[position][counter[position]]);
@@ -165,6 +162,7 @@ public class StoryPlayerActivity extends AppCompatActivity {
         }
         @Override
         public void onPrev() {
+            System.out.println("prev");
             if ((counter[position] - 1) < 0) {
                 if(position>0) {
                     position--;
@@ -180,6 +178,7 @@ public class StoryPlayerActivity extends AppCompatActivity {
         }
         @Override
         public void onComplete() {
+            System.out.println("complete");
             counter[position] = ImageURls[position].length-1;
             if(position<ImageURls.length-1){
                 position++;
@@ -209,6 +208,7 @@ public class StoryPlayerActivity extends AppCompatActivity {
                     .into(image);
         }
         private void startStories(){
+            System.out.println("start stories");
             storiesProgressView = binding.stories;
             storiesProgressView.setStoriesCount(ImageURls[position].length);
             storiesProgressView.setStoryDuration(5000);
@@ -226,7 +226,6 @@ public class StoryPlayerActivity extends AppCompatActivity {
             skip.setOnClickListener(v -> storiesProgressView.skip());
             skip.setOnTouchListener(onTouchListener);
 
-            vpage.setObjectForPosition(view, position);
         }
         private final View.OnTouchListener onTouchListener = new View.OnTouchListener() {
             @Override
