@@ -41,11 +41,11 @@ public class StoryPlayerActivity extends AppCompatActivity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_story_player);
 
-        vpage = (JazzyViewPager) findViewById(R.id.jazzy_pager);
+        vpage = findViewById(R.id.jazzy_pager);
         vpage.setTransitionEffect(TransitionEffect.CubeOut);
         Intent intent = getIntent();
         int[] counter = intent.getIntArrayExtra("counter");
-        MainAdapter vpageAdapter = new MainAdapter(
+        MainAdapter vpageAdapter = new MainAdapter(this,
                 intent.getIntExtra("position",0),
                 Objects.requireNonNull(intent.getStringArrayExtra("usernameList")),
                 Objects.requireNonNull(intent.getStringArrayExtra("ppUrlList")),
@@ -54,22 +54,27 @@ public class StoryPlayerActivity extends AppCompatActivity {
         vpage.setAdapter(vpageAdapter);
         vpage.setCurrentItem(intent.getIntExtra("position",0));
         vpage.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            public void onPageScrollStateChanged(int state) {}
+            public void onPageScrollStateChanged(int state) {
+                if(state == 0) {
+                    vpageAdapter.startStories();
+                }
+            }
             public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {}
             public void onPageSelected(int position) {
                 vpageAdapter.position=position;
-                vpageAdapter.startStories();
+
             }
         });
     }
 
     private class MainAdapter extends PagerAdapter implements StoriesProgressView.StoriesListener {
+        private final StoryPlayerActivity activity;
         StoriesProgressView storiesProgressView;
         StoryBinding binding;
         View view;
         private ImageView image;
         private final String[][] ImageURls = {
-                {"https://source.unsplash.com/user/c_v_r/100x100","https://source.unsplash.com/user/c_v_r/50x50"},
+                {"https://source.unsplash.com/user/c_v_r/100x100"},
                 {"https://source.unsplash.com/user/c_v_r/125x125", "https://source.unsplash.com/user/c_v_r/100x150"},
                 {"https://source.unsplash.com/user/c_v_r/175x175", "https://source.unsplash.com/user/c_v_r/200x200", "https://source.unsplash.com/user/c_v_r/225x225"},
                 {"https://source.unsplash.com/user/c_v_r/250x250", "https://source.unsplash.com/user/c_v_r/275x275","https://source.unsplash.com/user/c_v_r/300x300", "https://source.unsplash.com/user/c_v_r/325x325"},
@@ -82,7 +87,8 @@ public class StoryPlayerActivity extends AppCompatActivity {
         long pressTime = 0L;
         long limit = 500L;
 
-        public MainAdapter(int position, String[] usernameList, String[] ppUrlList, int[] counter){
+        public MainAdapter(StoryPlayerActivity storyPlayerActivity, int position, String[] usernameList, String[] ppUrlList, int[] counter){
+            this.activity=storyPlayerActivity;
             this.position=position;
             this.usernameList=usernameList;
             this.ppUrlList = ppUrlList;
@@ -96,10 +102,6 @@ public class StoryPlayerActivity extends AppCompatActivity {
             binding = StoryBinding.inflate(inflater);
             view = binding.getRoot();
 
-            if(this.position==position) {
-                startStories();
-            }
-
             CircleImageView profileImage = binding.profileImage;
             TextView usernameTV = binding.usernameTV;
 
@@ -107,18 +109,12 @@ public class StoryPlayerActivity extends AppCompatActivity {
             Glide.with(view)
                     .load(ppUrlList[position])
                     .into(profileImage);
-            glideImage(ImageURls[position][counter[position]]);
-
-            View reverse = binding.reverse;
-            reverse.setOnClickListener(v -> storiesProgressView.reverse());
-            reverse.setOnTouchListener(onTouchListener);
-
-            View skip = binding.skip;
-            skip.setOnClickListener(v -> storiesProgressView.skip());
-            skip.setOnTouchListener(onTouchListener);
+            if(this.position==position) {
+                startStories();
+            }
 
             container.addView(view, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-            vpage.setObjectForPosition(view, position);
+
 
             return view;
         }
@@ -147,8 +143,8 @@ public class StoryPlayerActivity extends AppCompatActivity {
             if ((counter[position] - 1) < 0) {
                 if(position>0) {
                     position--;
+                    vpage.setAdapter(this);
                     vpage.setCurrentItem(position);
-                    startStories();
                 }
                 return;
             }
@@ -159,10 +155,15 @@ public class StoryPlayerActivity extends AppCompatActivity {
         }
         @Override
         public void onComplete() {
-            counter[position] = ImageURls[position].length;
-            position++;
-            vpage.setCurrentItem(position);
-            startStories();
+            counter[position] = ImageURls[position].length-1;
+            if(position<ImageURls.length-1){
+                position++;
+                vpage.setAdapter(this);
+                vpage.setCurrentItem(position);
+            }else{
+                activity.finish();
+            }
+
         }
         private void glideImage(String URL)
         {
@@ -189,6 +190,18 @@ public class StoryPlayerActivity extends AppCompatActivity {
             storiesProgressView.setStoriesListener(this);
             if(counter[position]<ImageURls[position].length) storiesProgressView.startStories(counter[position]);
             image = binding.image;
+
+            glideImage(ImageURls[position][counter[position]]);
+
+            View reverse = binding.reverse;
+            reverse.setOnClickListener(v -> storiesProgressView.reverse());
+            reverse.setOnTouchListener(onTouchListener);
+
+            View skip = binding.skip;
+            skip.setOnClickListener(v -> storiesProgressView.skip());
+            skip.setOnTouchListener(onTouchListener);
+
+            vpage.setObjectForPosition(view, position);
         }
         private final View.OnTouchListener onTouchListener = new View.OnTouchListener() {
             @Override
