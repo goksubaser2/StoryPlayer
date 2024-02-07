@@ -3,6 +3,10 @@ package com.example.storyplayer2;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.media.MediaMetadataRetriever;
+import android.media.MediaPlayer;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -31,11 +35,14 @@ import com.example.storyplayer2.databinding.StoryBinding;
 import com.hisham.jazzyviewpagerlib.JazzyViewPager;
 import com.hisham.jazzyviewpagerlib.JazzyViewPager.TransitionEffect;
 
+import java.io.File;
 import java.net.URLConnection;
+import java.util.HashMap;
 import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import jp.shts.android.storiesprogressview.StoriesProgressView;
+import wseemann.media.FFmpegMediaMetadataRetriever;
 
 public class StoryPlayerActivity extends AppCompatActivity {
     private JazzyViewPager vpage;
@@ -101,6 +108,7 @@ public class StoryPlayerActivity extends AppCompatActivity {
     private class MainAdapter extends PagerAdapter implements StoriesProgressView.StoriesListener {
         private final StoryPlayerActivity activity;
         StoriesProgressView storiesProgressView;
+        LayoutInflater inflater;
         StoryBinding binding;
         View view;
         private ImageView image;
@@ -109,15 +117,15 @@ public class StoryPlayerActivity extends AppCompatActivity {
         private final String[][] ImageURls = {
                 {"https://source.unsplash.com/user/c_v_r/100x100"},
                 {"https://source.unsplash.com/user/c_v_r/125x125", "https://source.unsplash.com/user/c_v_r/100x150"},
-                {"https://source.unsplash.com/user/c_v_r/175x175", "https://source.unsplash.com/user/c_v_r/200x200", "https://source.unsplash.com/user/c_v_r/225x225"},
-                {"https://source.unsplash.com/user/c_v_r/250x250", "https://source.unsplash.com/user/c_v_r/275x275","https://source.unsplash.com/user/c_v_r/300x300", "https://source.unsplash.com/user/c_v_r/325x325"},
+                {"https://source.unsplash.com/user/c_v_r/175x175", "https://file-examples.com/storage/fe63e96e0365c0e1e99a842/2017/04/file_example_MP4_480_1_5MG.mp4", "https://source.unsplash.com/user/c_v_r/225x225"},
+                {"https://docs.evostream.com/sample_content/assets/sintel1m720p.mp4", "https://source.unsplash.com/user/c_v_r/275x275","https://source.unsplash.com/user/c_v_r/300x300", "https://source.unsplash.com/user/c_v_r/325x325"},
                 {"https://source.unsplash.com/user/c_v_r/350x350", "https://source.unsplash.com/user/c_v_r/375x375","https://source.unsplash.com/user/c_v_r/400x400", "https://source.unsplash.com/user/c_v_r/425x425","https://source.unsplash.com/user/c_v_r/450x450"}
         };
         private final boolean[][] isVideo = {
                 {false},
                 {false,false},
                 {false,true,false},
-                {false,false,false,false},
+                {true,false,false,false},
                 {false,false,false,false,false},
         };
         private int position;
@@ -137,7 +145,7 @@ public class StoryPlayerActivity extends AppCompatActivity {
         @NonNull
         @Override
         public Object instantiateItem(ViewGroup container, final int position) {
-            LayoutInflater inflater = (LayoutInflater) container.getContext()
+            inflater = (LayoutInflater) container.getContext()
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             binding = StoryBinding.inflate(inflater);
             view = binding.getRoot();
@@ -208,10 +216,15 @@ public class StoryPlayerActivity extends AppCompatActivity {
             if(isVideo[position][counter[position]]){//TODO
                 image.setVisibility(View.INVISIBLE);
                 videoWrapper.setVisibility(View.VISIBLE);
-                video.setVideoPath("https://file-examples.com/storage/fe63e96e0365c0e1e99a842/2017/04/file_example_MP4_480_1_5MG.mp4");
+                video.setVideoPath(URL);
                 video.start();
-                storiesProgressView.setStoryDuration(10000);
 
+                FFmpegMediaMetadataRetriever mFFmpegMediaMetadataRetriever = new FFmpegMediaMetadataRetriever();
+                mFFmpegMediaMetadataRetriever.setDataSource(URL);
+                String mVideoDuration =  mFFmpegMediaMetadataRetriever .extractMetadata(FFmpegMediaMetadataRetriever .METADATA_KEY_DURATION);
+                long mTimeInMilliseconds= Long.parseLong(mVideoDuration);
+
+                storiesProgressView.setStoryDuration(mTimeInMilliseconds);
             }else{
                 videoWrapper.setVisibility(View.INVISIBLE);
                 image.setVisibility(View.VISIBLE);
