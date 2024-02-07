@@ -3,10 +3,6 @@ package com.example.storyplayer2;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.media.MediaMetadataRetriever;
-import android.media.MediaPlayer;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -14,7 +10,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,10 +29,6 @@ import com.bumptech.glide.request.target.Target;
 import com.example.storyplayer2.databinding.StoryBinding;
 import com.hisham.jazzyviewpagerlib.JazzyViewPager;
 import com.hisham.jazzyviewpagerlib.JazzyViewPager.TransitionEffect;
-
-import java.io.File;
-import java.net.URLConnection;
-import java.util.HashMap;
 import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -78,7 +69,7 @@ public class StoryPlayerActivity extends AppCompatActivity {
                         vpageAdapter.startStories();
                     }else{
                         vpageAdapter.storiesProgressView.resume();
-                        //TODO video resume will probably be on here
+                        vpageAdapter.video.start();
                     }
                 }
             }
@@ -213,6 +204,7 @@ public class StoryPlayerActivity extends AppCompatActivity {
         }
         private void glideImage(String URL)
         {
+            video.pause();
             if(isVideo[position][counter[position]]){//TODO
                 image.setVisibility(View.INVISIBLE);
                 videoWrapper.setVisibility(View.VISIBLE);
@@ -282,7 +274,7 @@ public class StoryPlayerActivity extends AppCompatActivity {
                     case MotionEvent.ACTION_UP:
                         long now = System.currentTimeMillis();
                         storiesProgressView.resume();
-                        video.resume();//TODO resume not woking
+                        video.start();
                         return limit < now - pressTime;
                 }
                 return false;
