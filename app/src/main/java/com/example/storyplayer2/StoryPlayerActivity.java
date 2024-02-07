@@ -10,8 +10,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.VideoView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -28,6 +31,7 @@ import com.example.storyplayer2.databinding.StoryBinding;
 import com.hisham.jazzyviewpagerlib.JazzyViewPager;
 import com.hisham.jazzyviewpagerlib.JazzyViewPager.TransitionEffect;
 
+import java.net.URLConnection;
 import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -67,6 +71,7 @@ public class StoryPlayerActivity extends AppCompatActivity {
                         vpageAdapter.startStories();
                     }else{
                         vpageAdapter.storiesProgressView.resume();
+                        //TODO video resume will probably be on here
                     }
                 }
             }
@@ -91,7 +96,6 @@ public class StoryPlayerActivity extends AppCompatActivity {
     @Override
     public void finish() {
         super.finish();
-        System.out.println("finish");
         StoryViewAdapter.counter = vpageAdapter.counter;
     }
     private class MainAdapter extends PagerAdapter implements StoriesProgressView.StoriesListener {
@@ -100,12 +104,21 @@ public class StoryPlayerActivity extends AppCompatActivity {
         StoryBinding binding;
         View view;
         private ImageView image;
+        private VideoView video;
+        RelativeLayout videoWrapper;
         private final String[][] ImageURls = {
                 {"https://source.unsplash.com/user/c_v_r/100x100"},
                 {"https://source.unsplash.com/user/c_v_r/125x125", "https://source.unsplash.com/user/c_v_r/100x150"},
                 {"https://source.unsplash.com/user/c_v_r/175x175", "https://source.unsplash.com/user/c_v_r/200x200", "https://source.unsplash.com/user/c_v_r/225x225"},
                 {"https://source.unsplash.com/user/c_v_r/250x250", "https://source.unsplash.com/user/c_v_r/275x275","https://source.unsplash.com/user/c_v_r/300x300", "https://source.unsplash.com/user/c_v_r/325x325"},
                 {"https://source.unsplash.com/user/c_v_r/350x350", "https://source.unsplash.com/user/c_v_r/375x375","https://source.unsplash.com/user/c_v_r/400x400", "https://source.unsplash.com/user/c_v_r/425x425","https://source.unsplash.com/user/c_v_r/450x450"}
+        };
+        private final boolean[][] isVideo = {
+                {false},
+                {false,false},
+                {false,true,false},
+                {false,false,false,false},
+                {false,false,false,false,false},
         };
         private int position;
         private final String[] usernameList;
@@ -124,8 +137,6 @@ public class StoryPlayerActivity extends AppCompatActivity {
         @NonNull
         @Override
         public Object instantiateItem(ViewGroup container, final int position) {
-            System.out.println("this.position: "+this.position +" // position: "+ position);
-
             LayoutInflater inflater = (LayoutInflater) container.getContext()
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             binding = StoryBinding.inflate(inflater);
@@ -194,29 +205,44 @@ public class StoryPlayerActivity extends AppCompatActivity {
         }
         private void glideImage(String URL)
         {
-            Glide.with(view)
-                    .load(URL)
-                    .listener(new RequestListener<Drawable>() {
-                        @Override
-                        public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-                            Toast.makeText(StoryPlayerActivity.this, "Failed to load image.", Toast.LENGTH_SHORT).show();
-                            return false;
-                        }
+            if(isVideo[position][counter[position]]){//TODO
+                image.setVisibility(View.INVISIBLE);
+                videoWrapper.setVisibility(View.VISIBLE);
+                video.setVideoPath("https://file-examples.com/storage/fe63e96e0365c0e1e99a842/2017/04/file_example_MP4_480_1_5MG.mp4");
+                video.start();
+                storiesProgressView.setStoryDuration(10000);
 
-                        @Override
-                        public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                            return false;
-                        }
-                    })
-                    .into(image);
+            }else{
+                videoWrapper.setVisibility(View.INVISIBLE);
+                image.setVisibility(View.VISIBLE);
+                storiesProgressView.setStoryDuration(5000);
+
+                Glide.with(view)
+                        .load(URL)
+                        .listener(new RequestListener<Drawable>() {
+                            @Override
+                            public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                                Toast.makeText(StoryPlayerActivity.this, "Failed to load image.", Toast.LENGTH_SHORT).show();
+                                return false;
+                            }
+
+                            @Override
+                            public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                                return false;
+                            }
+                        })
+                        .into(image);
+            }
+            if(counter[position]<ImageURls[position].length) storiesProgressView.startStories(counter[position]);
+
         }
         private void startStories(){
-            System.out.println("start stories");
             storiesProgressView = binding.stories;
             storiesProgressView.setStoriesCount(ImageURls[position].length);
-            storiesProgressView.setStoryDuration(5000);
             storiesProgressView.setStoriesListener(this);
-            if(counter[position]<ImageURls[position].length) storiesProgressView.startStories(counter[position]);
+
+            video = binding.video;
+            videoWrapper = binding.videoWrapper;
             image = binding.image;
 
             glideImage(ImageURls[position][counter[position]]);
@@ -228,7 +254,6 @@ public class StoryPlayerActivity extends AppCompatActivity {
             View skip = binding.skip;
             skip.setOnClickListener(v -> storiesProgressView.skip());
             skip.setOnTouchListener(onTouchListener);
-
         }
         private final View.OnTouchListener onTouchListener = new View.OnTouchListener() {
             @Override
@@ -238,11 +263,13 @@ public class StoryPlayerActivity extends AppCompatActivity {
 
                         pressTime = System.currentTimeMillis();
                         storiesProgressView.pause();
+                        video.pause();
                         return false;
 
                     case MotionEvent.ACTION_UP:
                         long now = System.currentTimeMillis();
                         storiesProgressView.resume();
+                        video.resume();//TODO resume not woking
                         return limit < now - pressTime;
                 }
                 return false;
