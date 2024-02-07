@@ -40,7 +40,6 @@ public class StoryPlayerActivity extends AppCompatActivity {
     MainAdapter vpageAdapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        System.out.println("Story Player Starting...");
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_story_player);
@@ -66,8 +65,12 @@ public class StoryPlayerActivity extends AppCompatActivity {
                 if(state == 0) {
                     if(tempPosition>=0) {
                         vpageAdapter.position=tempPosition;
+
+                        vpage.setAdapter(vpageAdapter);
+                        vpage.setCurrentItem(tempPosition);
+
                         tempPosition = -1;
-                        vpageAdapter.startStories();
+
                     }else{
                         vpageAdapter.storiesProgressView.resume();
                         vpageAdapter.video.start();
@@ -149,9 +152,11 @@ public class StoryPlayerActivity extends AppCompatActivity {
             Glide.with(view)
                     .load(ppUrlList[position])
                     .into(profileImage);
+
             if(this.position==position) {
                 startStories();
             }
+
             vpage.setObjectForPosition(view, position);
             container.addView(view, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
             return view;
@@ -220,7 +225,7 @@ public class StoryPlayerActivity extends AppCompatActivity {
             }else{
                 videoWrapper.setVisibility(View.INVISIBLE);
                 image.setVisibility(View.VISIBLE);
-                storiesProgressView.setStoryDuration(5000);
+                storiesProgressView.setStoryDuration(15000);
                 Glide.with(view)
                         .load(URL)
                         .listener(new RequestListener<Drawable>() {
@@ -243,7 +248,6 @@ public class StoryPlayerActivity extends AppCompatActivity {
 
         }
         private void startStories(){
-            System.out.println("startStories for pos: " + position +" // counter: " + counter[position]);
             storiesProgressView = binding.stories;
             storiesProgressView.setStoriesCount(ImageURls[position].length);
             storiesProgressView.setStoriesListener(this);
