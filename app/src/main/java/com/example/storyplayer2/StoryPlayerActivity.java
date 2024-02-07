@@ -40,6 +40,7 @@ public class StoryPlayerActivity extends AppCompatActivity {
     MainAdapter vpageAdapter;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        System.out.println("Story Player Starting...");
         super.onCreate(savedInstanceState);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_story_player);
@@ -107,14 +108,14 @@ public class StoryPlayerActivity extends AppCompatActivity {
         RelativeLayout videoWrapper;
         private final String[][] ImageURls = {
                 {"https://source.unsplash.com/user/c_v_r/100x100"},
-                {"https://source.unsplash.com/user/c_v_r/125x125", "https://source.unsplash.com/user/c_v_r/100x150"},
+                {"https://source.unsplash.com/user/c_v_r/125x125", "https://docs.evostream.com/sample_content/assets/bun33s.mp4"},
                 {"https://source.unsplash.com/user/c_v_r/175x175", "https://file-examples.com/storage/fe63e96e0365c0e1e99a842/2017/04/file_example_MP4_480_1_5MG.mp4", "https://source.unsplash.com/user/c_v_r/225x225"},
                 {"https://docs.evostream.com/sample_content/assets/sintel1m720p.mp4", "https://source.unsplash.com/user/c_v_r/275x275","https://source.unsplash.com/user/c_v_r/300x300", "https://source.unsplash.com/user/c_v_r/325x325"},
                 {"https://source.unsplash.com/user/c_v_r/350x350", "https://source.unsplash.com/user/c_v_r/375x375","https://source.unsplash.com/user/c_v_r/400x400", "https://source.unsplash.com/user/c_v_r/425x425","https://source.unsplash.com/user/c_v_r/450x450"}
         };
         private final boolean[][] isVideo = {
                 {false},
-                {false,false},
+                {false,true},
                 {false,true,false},
                 {true,false,false,false},
                 {false,false,false,false,false},
@@ -205,23 +206,21 @@ public class StoryPlayerActivity extends AppCompatActivity {
         private void glideImage(String URL)
         {
             video.pause();
-            if(isVideo[position][counter[position]]){//TODO
+            if(isVideo[position][counter[position]]){
                 image.setVisibility(View.INVISIBLE);
                 videoWrapper.setVisibility(View.VISIBLE);
                 video.setVideoPath(URL);
-                video.start();
-
                 FFmpegMediaMetadataRetriever mFFmpegMediaMetadataRetriever = new FFmpegMediaMetadataRetriever();
                 mFFmpegMediaMetadataRetriever.setDataSource(URL);
                 String mVideoDuration =  mFFmpegMediaMetadataRetriever .extractMetadata(FFmpegMediaMetadataRetriever .METADATA_KEY_DURATION);
                 long mTimeInMilliseconds= Long.parseLong(mVideoDuration);
 
+                video.start();
                 storiesProgressView.setStoryDuration(mTimeInMilliseconds);
             }else{
                 videoWrapper.setVisibility(View.INVISIBLE);
                 image.setVisibility(View.VISIBLE);
                 storiesProgressView.setStoryDuration(5000);
-
                 Glide.with(view)
                         .load(URL)
                         .listener(new RequestListener<Drawable>() {
@@ -238,10 +237,13 @@ public class StoryPlayerActivity extends AppCompatActivity {
                         })
                         .into(image);
             }
-            if(counter[position]<ImageURls[position].length) storiesProgressView.startStories(counter[position]);
+            if(counter[position]<ImageURls[position].length){
+                storiesProgressView.startStories(counter[position]);
+            }
 
         }
         private void startStories(){
+            System.out.println("startStories for pos: " + position +" // counter: " + counter[position]);
             storiesProgressView = binding.stories;
             storiesProgressView.setStoriesCount(ImageURls[position].length);
             storiesProgressView.setStoriesListener(this);
